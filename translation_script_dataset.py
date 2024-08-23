@@ -85,24 +85,24 @@ def serialize_complex_columns(df):
             df[column] = df[column].apply(lambda x: json.dumps(x) if isinstance(x, (list, dict)) else x)
     return df
 
-
-
 def base64_to_image(b64_string):
-    if b64_string is None or isinstance(b64_string, Image.Image):
-        return b64_string
+    if b64_string is None:
+        return None
+    if not isinstance(b64_string, str) or not b64_string.startswith('b'):
+        return b64_string  # Return as is if it's not a base64 string
     try:
-        return Image.open(BytesIO(base64.b64decode(b64_string)))
+        img_data = base64.b64decode(b64_string)
+        return Image.open(BytesIO(img_data))
     except:
-        return b64_string  # Return as is if it can't be converted (might be a file path)
+        return b64_string  # Return as is if conversion fails
 
 def deserialize_complex_columns(df):
     for column in df.columns:
         if 'image' in column.lower():
             df[column] = df[column].apply(base64_to_image)
         elif df[column].dtype == 'object':
-            df[column] = df[column].apply(lambda x: json.loads(x) if isinstance(x, str) and x.startswith('{') else x)
+            df[column] = df[column].apply(lambda x: json.loads(x) if isinstance(x, str) and (x.startswith('{') or x.startswith('[')) else x)
     return df
-
 
 def data_translate_column(processor, model, device, tgt_language):
     domains = [
