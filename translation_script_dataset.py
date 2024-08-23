@@ -96,12 +96,20 @@ def base64_to_image(b64_string):
     except:
         return b64_string  # Return as is if conversion fails
 
+def safe_json_loads(x):
+    if isinstance(x, str) and (x.startswith('{') or x.startswith('[')):
+        try:
+            return json.loads(x)
+        except json.JSONDecodeError:
+            return x  # Return the original string if JSON decoding fails
+    return x
+
 def deserialize_complex_columns(df):
     for column in df.columns:
         if 'image' in column.lower():
             df[column] = df[column].apply(base64_to_image)
         elif df[column].dtype == 'object':
-            df[column] = df[column].apply(lambda x: json.loads(x) if isinstance(x, str) and (x.startswith('{') or x.startswith('[')) else x)
+            df[column] = df[column].apply(safe_json_loads)
     return df
 
 def data_translate_column(processor, model, device, tgt_language):
