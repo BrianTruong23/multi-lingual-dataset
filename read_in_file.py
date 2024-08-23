@@ -1,10 +1,12 @@
-import pandas as pd
-import pyarrow.parquet as pq
+import pyarrow.ipc as ipc
 
 file_name = "vie/MMMU/Accounting/dev/data-00000-of-00001.arrow"
 
-# Read the Arrow file into a Pandas DataFrame
-table = pq.read_table(file_name)
+# Open the Arrow IPC file and read it into a table
+with ipc.open_file(file_name) as file:
+    table = file.read_all()
+
+# Convert the table to a Pandas DataFrame
 df = table.to_pandas()
 
 print(df.head())
