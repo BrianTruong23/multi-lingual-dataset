@@ -88,19 +88,18 @@ def serialize_complex_columns(df):
 def base64_to_image(b64_string):
     if b64_string is None:
         return None
-    if not isinstance(b64_string, str) or not b64_string.startswith('b'):
-        return b64_string  # Return as is if it's not a base64 string
+    if not isinstance(b64_string, str):
+        return b64_string  # Return as is if it's not a string
     try:
+        # Try decoding the base64 string and converting to an image
         img_data = base64.b64decode(b64_string)
+        print("IMAGE DATA conversion")
         return Image.open(BytesIO(img_data))
-    except:
+    except Exception as e:
+        print(f"Failed to convert base64 to image: {e}")
         return b64_string  # Return as is if conversion fails
 
-import json
-import logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 def safe_json_loads(x):
     if not isinstance(x, str):
@@ -110,15 +109,14 @@ def safe_json_loads(x):
     try:
         return json.loads(x)
     except json.JSONDecodeError:
-        logger.warning(f"Failed to decode JSON: {x[:50]}...")  # Log first 50 characters
         return x
 
 def deserialize_complex_columns(df):
     for column in df.columns:
         if 'image' in column.lower():
             df[column] = df[column].apply(base64_to_image)
+            print('Applying Serialize Image Column')
         elif df[column].dtype == 'object':
-            logger.info(f"Processing column: {column}")
             df[column] = df[column].apply(safe_json_loads)
     return df
 
