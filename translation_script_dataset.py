@@ -120,31 +120,31 @@ def data_translate_column(processor, model, device, tgt_language):
 
         # Serialize complex columns
         df_dev = serialize_complex_columns(df_dev)
-        df_test = serialize_complex_columns(df_test)
-        df_validation = serialize_complex_columns(df_validation)
+        # df_test = serialize_complex_columns(df_test)
+        # df_validation = serialize_complex_columns(df_validation)
 
         # Translate the columns of df_dev
         columns = ['question', 'options', 'explanation']
         for column in columns:
             df_dev[column] = translate_column(df_dev[column].tolist(), processor, model, device, tgt_language)
-            df_test[column] = translate_column(df_test[column].tolist(), processor, model, device, tgt_language)
-            df_validation[column] = translate_column(df_validation[column].tolist(), processor, model, device, tgt_language)
+            # df_test[column] = translate_column(df_test[column].tolist(), processor, model, device, tgt_language)
+            # df_validation[column] = translate_column(df_validation[column].tolist(), processor, model, device, tgt_language)
 
         # Deserialize complex columns
         df_dev = deserialize_complex_columns(df_dev)
-        df_test = deserialize_complex_columns(df_test)
-        df_validation = deserialize_complex_columns(df_validation)
+        # df_test = deserialize_complex_columns(df_test)
+        # df_validation = deserialize_complex_columns(df_validation)
 
         # Convert DataFrames to Datasets
         dataset_dev = Dataset.from_pandas(df_dev)
-        dataset_validation = Dataset.from_pandas(df_validation)
-        dataset_test = Dataset.from_pandas(df_test)
+        # dataset_validation = Dataset.from_pandas(df_validation)
+        # dataset_test = Dataset.from_pandas(df_test)
 
         # Create a DatasetDict
         dataset_dict = DatasetDict({
             'dev': dataset_dev,
-            'validation': dataset_validation,
-            'test': dataset_test
+            # 'validation': dataset_validation,
+            # 'test': dataset_test
         })
 
         # Save the dataset
