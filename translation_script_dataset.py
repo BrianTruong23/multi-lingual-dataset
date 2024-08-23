@@ -12,6 +12,7 @@ import re
 import time
 import os
 from datasets import load_dataset
+import json
 
 # Function to translate a batch of texts using the SeamlessM4T model
 def translate_batch(texts, processor, model, device, tgt_lang):
@@ -66,6 +67,7 @@ def translate_column(column_original_list, processor, model, device, tgt_lang):
     print("Successfully Translated: ", len(translated_values))
 
     return translated_values
+
 def image_to_base64(img):
     if img is None:
         return None
@@ -84,45 +86,36 @@ def serialize_complex_columns(df):
     return df
 
 
+def base64_to_image(base64_str):
+    if base64_str is None:
+        return None
+    try:
+        image_data = base64.b64decode(base64_str)
+        image = Image.open(BytesIO(image_data))
+        return image
+    except Exception as e:
+        print(f"Error converting base64 to image: {e}")
+        return None
+
+def deserialize_complex_columns(df):
+    for column in df.columns:
+        if 'image' in column.lower():
+            df[column] = df[column].apply(lambda x: base64_to_image(x) if x else None)
+        elif df[column].dtype == 'object':
+            df[column] = df[column].apply(lambda x: json.loads(x) if isinstance(x, str) and (x.startswith('[') or x.startswith('{')) else x)
+    return df
+
+
 def data_translate_column(processor, model, device, tgt_language):
     domains = [
-        # 2 hours
-        # "Accounting",
-        # "Agriculture",
-        # "Architecture_and_Engineering",
-        # "Art",
-        # "Art_Theory",
-        # "Basic_Medical_Science",
-        # "Biology",
-        # "Chemistry",
-        # "Clinical_Medicine",
-        # "Computer_Science",
-        # "Design",
-        # "Diagnostics_and_Laboratory_Medicine",
-        # "Economics",
-        # "Electronics",
-        # "Energy_and_Power",
-        # "Finance",
-        "Geography",
-        "History",
-        "Literature",
-        "Manage",
-        "Marketing",
-        "Materials",
-        "Math",
-        "Mechanical_Engineering",
-        "Music",
-        "Pharmacy",
-        "Physics",
-        "Psychology",
-        "Public_Health",
-        "Sociology"
+        "Accounting",
+        # Add more domains if needed
     ]
 
     for domain in domains:
         dataset = load_dataset("MMMU/MMMU", domain)
 
-        # Convert to Pandas dataframe
+        # Convert to Pandas DataFrame
         df_dev = pd.DataFrame(dataset['dev'])
         df_test = pd.DataFrame(dataset['test'])
         df_validation = pd.DataFrame(dataset['validation'])
@@ -132,12 +125,17 @@ def data_translate_column(processor, model, device, tgt_language):
         df_test = serialize_complex_columns(df_test)
         df_validation = serialize_complex_columns(df_validation)
 
-        # Translate the columns of df_dev 
+        # Translate the columns of df_dev
         columns = ['question', 'options', 'explanation']
         for column in columns:
-          df_dev[column] = translate_column(df_dev[column].tolist(), processor, model, device, tgt_language)
-          df_test[column] = translate_column(df_test[column].tolist(), processor, model, device, tgt_language)
-          df_validation[column] = translate_column(df_validation[column].tolist(), processor, model, device, tgt_language)
+            df_dev[column] = translate_column(df_dev[column].tolist(), processor, model, device, tgt_language)
+            df_test[column] = translate_column(df_test[column].tolist(), processor, model, device, tgt_language)
+            df_validation[column] = translate_column(df_validation[column].tolist(), processor, model, device, tgt_language)
+
+        # Deserialize complex columns
+        df_dev = deserialize_complex_columns(df_dev)
+        df_test = deserialize_complex_columns(df_test)
+        df_validation = deserialize_complex_columns(df_validation)
 
         # Convert DataFrames to Datasets
         dataset_dev = Dataset.from_pandas(df_dev)
@@ -153,6 +151,79 @@ def data_translate_column(processor, model, device, tgt_language):
 
         # Save the dataset
         dataset_dict.save_to_disk(f'{tgt_language}/MMMU/{domain}')
+
+
+# def data_translate_column(processor, model, device, tgt_language):
+#     domains = [
+#         # 2 hours
+#         "Accounting",
+#         # "Agriculture",
+#         # "Architecture_and_Engineering",
+#         # "Art",
+#         # "Art_Theory",
+#         # "Basic_Medical_Science",
+#         # "Biology",
+#         # "Chemistry",
+#         # "Clinical_Medicine",
+#         # "Computer_Science",
+#         # "Design",
+#         # "Diagnostics_and_Laboratory_Medicine",
+#         # "Economics",
+#         # "Electronics",
+#         # "Energy_and_Power",
+#         # "Finance",
+#         # "Geography",
+#         # "History",
+#         # "Literature",
+#         # "Manage",
+#         # "Marketing",
+#         # "Materials",
+#         # "Math",
+#         # "Mechanical_Engineering",
+#         # "Music",
+#         # "Pharmacy",
+#         # "Physics",
+#         # "Psychology",
+#         # "Public_Health",
+#         # "Sociology"
+#     ]
+
+#     for domain in domains:
+#         dataset = load_dataset("MMMU/MMMU", domain)
+
+#         # Convert to Pandas dataframe
+#         df_dev = pd.DataFrame(dataset['dev'])
+#         df_test = pd.DataFrame(dataset['test'])
+#         df_validation = pd.DataFrame(dataset['validation'])
+
+#         # Serialize complex columns
+#         df_dev = serialize_complex_columns(df_dev)
+#         df_test = serialize_complex_columns(df_test)
+#         df_validation = serialize_complex_columns(df_validation)
+
+#         # Translate the columns of df_dev 
+#         columns = ['question', 'options', 'explanation']
+#         for column in columns:
+#           df_dev[column] = translate_column(df_dev[column].tolist(), processor, model, device, tgt_language)
+#           df_test[column] = translate_column(df_test[column].tolist(), processor, model, device, tgt_language)
+#           df_validation[column] = translate_column(df_validation[column].tolist(), processor, model, device, tgt_language)
+
+#         # Deseiralize complex columns:
+#         df_dev = des
+#         # Convert DataFrames to Datasets
+#         dataset_dev = Dataset.from_pandas(df_dev)
+#         dataset_validation = Dataset.from_pandas(df_validation)
+#         dataset_test = Dataset.from_pandas(df_test)
+
+#         # Create a DatasetDict
+#         dataset_dict = DatasetDict({
+#             'dev': dataset_dev,
+#             'validation': dataset_validation,
+#             'test': dataset_test
+#         })
+
+#         # Save the dataset
+#         dataset_dict.save_to_disk(f'{tgt_language}/MMMU/{domain}')
 
   
 def main():
