@@ -86,23 +86,21 @@ def serialize_complex_columns(df):
     return df
 
 
-def base64_to_image(base64_str):
-    if base64_str is None:
-        return None
+
+def base64_to_image(b64_string):
+    if b64_string is None or isinstance(b64_string, Image.Image):
+        return b64_string
     try:
-        image_data = base64.b64decode(base64_str)
-        image = Image.open(BytesIO(image_data))
-        return image
-    except Exception as e:
-        print(f"Error converting base64 to image: {e}")
-        return None
+        return Image.open(BytesIO(base64.b64decode(b64_string)))
+    except:
+        return b64_string  # Return as is if it can't be converted (might be a file path)
 
 def deserialize_complex_columns(df):
     for column in df.columns:
         if 'image' in column.lower():
-            df[column] = df[column].apply(lambda x: base64_to_image(x) if x else None)
+            df[column] = df[column].apply(base64_to_image)
         elif df[column].dtype == 'object':
-            df[column] = df[column].apply(lambda x: json.loads(x) if isinstance(x, str) and (x.startswith('[') or x.startswith('{')) else x)
+            df[column] = df[column].apply(lambda x: json.loads(x) if isinstance(x, str) and x.startswith('{') else x)
     return df
 
 
