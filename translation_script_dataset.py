@@ -3,7 +3,6 @@ from io import BytesIO
 from PIL import Image
 import pandas as pd
 from datasets import Dataset, DatasetDict, load_dataset
-import pandas as pd
 from transformers import AutoProcessor, SeamlessM4Tv2ForTextToText
 import torch
 import gc
@@ -11,8 +10,8 @@ import tqdm
 import re
 import time
 import os
-from datasets import load_dataset
 import json
+import argparse
 
 # Function to translate a batch of texts using the SeamlessM4T model
 def translate_batch(texts, processor, model, device, tgt_lang):
@@ -168,11 +167,37 @@ def data_translate_column(processor, model, device, tgt_language):
             'test': dataset_test
         })
 
+        # If the domain is not there, create the folder with the name as domain
+        check_and_create_domain(domain=domain, tgt_language=tgt_language)
         # Save the dataset
         dataset_dict.save_to_disk(f'{tgt_language}/MMMU/{domain}')
 
+
+def check_and_create_domain(domain, tgt_language):
+    # Construct the path to check
+    path_checked = f'{tgt_language}/MMMU/{domain}'
+    
+    # Check if the folder exists
+    if not os.path.exists(path_checked):
+        # If not, create the folder
+        os.makedirs(path_checked)
+        print(f"Folder '{path_checked}' created.")
+    else:
+        print(f"Folder '{path_checked}' already exists.")
+
+def parse_argument():
+    # Add parser argument
+    parser = argparse.ArgumentParser(description='Translate dataset columns using SeamlessM4T model.')
+    parser.add_argument('tgt_language', type=str, help='Target language for translation (e.g., "vie" for Vietnamese)')
+    args = parser.parse_args()
+    return args
   
 def main():
+
+    args = parse_argument()
+    tgt_language = args.tgt_language
+
+    print(tgt_language)
     start_time = time.time()
     # Check if CUDA is available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -189,9 +214,6 @@ def main():
     ).to(device)
 
     print("\nSTARTING TRANSLATION\n")
-
-    # Starting translation
-    tgt_language = 'vie'
 
     data_translate_column(processor, model, device, tgt_language)
 
