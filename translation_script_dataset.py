@@ -140,6 +140,7 @@ def data_translate_column(processor, model, device, tgt_language):
          # Check if the folder is created already in that domain, if created, skip through the next one 
         path_checked = f'{tgt_language}/MMMU/{domain}'
         if os.path.exists(path_checked):
+            print(f"Folder '{path_checked}' already exists.")
             continue
 
         dataset = load_dataset("MMMU/MMMU", domain)
@@ -188,8 +189,6 @@ def check_and_create_domain(domain, tgt_language):
         # If not, create the folder
         os.makedirs(path_checked)
         print(f"Folder '{path_checked}' created.")
-    else:
-        print(f"Folder '{path_checked}' already exists.")
 
 def parse_argument():
     # Add parser argument
