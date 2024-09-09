@@ -102,7 +102,7 @@ def base64_to_image(b64_string):
 
 def data_translate_column(processor, model, device, tgt_language):
     domains = [
-        # 2 hours
+        # 5 hours
         "Accounting",
         "Agriculture",
         "Architecture_and_Engineering",
@@ -136,6 +136,12 @@ def data_translate_column(processor, model, device, tgt_language):
     ]
 
     for domain in domains:
+
+         # Check if the folder is created already in that domain, if created, skip through the next one 
+        path_checked = f'{tgt_language}/MMMU/{domain}'
+        if os.path.exists(path_checked):
+            continue
+
         dataset = load_dataset("MMMU/MMMU", domain)
 
         # Convert to Pandas dataframe
