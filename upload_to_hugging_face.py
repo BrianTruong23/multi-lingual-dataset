@@ -3,7 +3,7 @@ import os
 from huggingface_hub import upload_file
 
 # Replace 'your_huggingface_token' with your actual token
-login(token="your_huggingface_token")
+login(token="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")
 
 # Define the paths to the folders
 directories = ["fra", "jpn"]
