@@ -5,6 +5,12 @@ from huggingface_hub import upload_file
 # Replace 'your_huggingface_token' with your actual token
 login(token="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")
 
+def parse_argument():
+    pass 
+
+def checking_file_exist():
+    pass 
+
 # Define the paths to the folders
 directories = ["fra", "jpn"]
 
