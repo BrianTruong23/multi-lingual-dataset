@@ -54,7 +54,7 @@ def translate_column(column_original_list, processor, model, device, tgt_lang):
     batch_size =  64 # Set batch size
 
     if len(values) < 10:
-        batch_size = values
+        batch_size = len(values) + 1
 
     print("Using batch size: ", batch_size)
     for i in tqdm.tqdm(range(0, len(values), batch_size)):
