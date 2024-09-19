@@ -53,7 +53,7 @@ def translate_column(column_original_list, processor, model, device, tgt_lang):
 
     batch_size =  64 # Set batch size
 
-    if values < 10:
+    if len(values) < 10:
         batch_size = values
 
     print("Using batch size: ", batch_size)
