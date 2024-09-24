@@ -107,7 +107,6 @@ def base64_to_image(b64_string):
 
 def data_translate_column(processor, model, device, tgt_language):
     domains = [
-        # 5 hours
         "Accounting",
         "Agriculture",
         "Architecture_and_Engineering",
