@@ -1,0 +1,40 @@
+from datasets import load_dataset
+# df = load_dataset("merve/vqav2-small",use_auth_token="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")
+# dataset = load_dataset('utischoolnlp/translated_mmmu_datasets', name='fra', data_files='MMMU/Accounting/dev/data-00000-of-00001.arrow', use_auth_token = 'True')
+from huggingface_hub import HfApi
+
+api = HfApi()
+api.whoami(token='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')  # Use your actual token here
+
+# from datasets import load_dataset
+
+# dataset = load_dataset(
+#     'utischoolnlp/translated_mmmu_datasets',
+#     use_auth_token='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'  # Your actual token here
+# )
+
+path_dataset = 'utischoolnlp/translated_mmmu_datasets'
+auth_token = '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' 
+from datasets import load_dataset
+
+# Load the French Accounting dataset
+dataset = load_dataset(path_dataset, 
+                       name='fra_accounting',
+                       data_files={
+                           'dev': 'fra/MMMU/Accounting/dev/*.json',
+                           'test': 'fra/MMMU/Accounting/test/*.json',
+                           'validation': 'fra/MMMU/Accounting/validation/*.json',
+                       },
+                       use_auth_token = auth_token)
+
+# Access the dataset splits
+dev_data = dataset['dev']
+test_data = dataset['test']
+validation_data = dataset['validation']
+
+# Print some examples
+print(dev_data[0])
+print(test_data[0])
+print(validation_data[0])
+
+
